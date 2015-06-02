@@ -1,6 +1,6 @@
 import os
 from functools import wraps
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, render_template
 
 from .projector import ProjectorSet
 
@@ -16,20 +16,7 @@ else:
 
 @app.route('/')
 def homepage():
-    return '''
-<doctype html>
-<html>
-  <head>
-    <title>Gentry SDA Projectors</title>
-  </head>
-  <body>
-    <form method="POST" action="/freeze"><input type="submit" value="Freeze"></form>
-    <form method="POST" action="/unfreeze"><input type="submit" value="Unfreeze"></form>
-    <form method="POST" action="/blank"><input type="submit" value="Blank"></form>
-    <form method="POST" action="/unblank"><input type="submit" value="Unblank"></form>
-  </body>
-</html>
-'''
+    return render_template('index.html')
 
 
 def with_projectors(fn):
