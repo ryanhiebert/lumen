@@ -10,6 +10,8 @@ app = Flask(__name__)
 _PROJECTOR_IP_ADDRS = os.environ.get('PROJECTOR_IP_ADDRS')
 if _PROJECTOR_IP_ADDRS:
     app.config['PROJECTOR_IP_ADDRS'] = _PROJECTOR_IP_ADDRS.split(',')
+else:
+    app.config['PROJECTOR_IP_ADDRS'] = []
 
 
 @app.route('/')
