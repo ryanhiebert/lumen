@@ -1,35 +1,5 @@
 from socket import socket, AF_INET, SOCK_STREAM, SHUT_RDWR
-from contextlib import closing
-
-
-class ProjectorSet(object):
-    def __init__(self, ip_addrs):
-        self.projectors = [Projector(ip_addr) for ip_addr in ip_addrs]
-
-    def __repr__(self):
-        return 'ProjectorSet({})'.format(
-            repr([p.ip_addr for p in self.projectors]))
-
-    def query(self, message):
-        return [projector.query(message) for projector in self.projectors]
-
-    def poweron(self):
-        return [projector.poweron() for projector in self.projectors]
-
-    def poweroff(self):
-        return [projector.poweroff() for projector in self.projectors]
-
-    def freeze(self):
-        return [projector.freeze() for projector in self.projectors]
-
-    def unfreeze(self):
-        return [projector.unfreeze() for projector in self.projectors]
-
-    def blank(self):
-        return [projector.blank() for projector in self.projectors]
-
-    def unblank(self):
-        return [projector.unblank() for projector in self.projectors]
+from contextlib import closing, contextmanager, ExitStack
 
 
 class Projector(object):
@@ -40,14 +10,15 @@ class Projector(object):
     def __repr__(self):
         return 'Projector({})'.format(repr(self.ip_addr))
 
+    @contextmanager
+    def connect(self):
+        with Socket.connect(self.ip_addr, self.port) as s:
+            yield s
+
     def query(self, message):
-        with closing(socket(AF_INET, SOCK_STREAM)) as s:
-            s.connect((self.ip_addr, self.port))
-            bytes = s.send(message + b'\r')
-            messageback = s.recv(128)
-            s.shutdown(SHUT_RDWR)
-        assert messageback.endswith(b'\r')
-        return Response(messageback[:-1])
+        with self.connect() as s:
+            s.send(message)
+            return s.recv()
 
     def poweron(self):
         return self.query(b'POWER=ON')
@@ -66,6 +37,61 @@ class Projector(object):
 
     def unblank(self):
         return self.query(b'BLANK=OFF')
+
+
+class ProjectorSet(Projector):
+    """A Projector subclass that control multiple projectors."""
+
+    def __init__(self, ip_addrs):
+        self.projectors = [Projector(ip_addr) for ip_addr in ip_addrs]
+
+    def __repr__(self):
+        return 'ProjectorSet({})'.format(
+            repr([p.ip_addr for p in self.projectors]))
+
+    @contextmanager
+    def connect(self):
+        with ExitStack() as stack:
+            yield [
+                stack.enter_context(projector.connect())
+                for projector in self.projectors
+            ]
+
+    def query(self, message):
+        with self.connect() as sockets:
+            [s.send(message) for s in sockets]
+            return [s.recv() for s in sockets]
+
+
+class Socket:
+    """Wrap a socket to make messaging easier.
+
+    This isn't a subclass of socket because socket doesn't
+    play well with subclasses.
+    """
+    def __init__(self, socket, ip_addr, port):
+        self.socket = socket
+        socket.connect((ip_addr, port))
+
+    def send(self, bytes, *args, **kwargs):
+        return self.socket.send(bytes + b'\r', *args, **kwargs)
+
+    def recv(self, bufsize=128, *args, **kwargs):
+        res = self.socket.recv(bufsize, *args, **kwargs)
+        assert res.endswith(b'\r')
+        return Response(res[:-1])
+
+    def close(self, *args, **kwargs):
+        # Shut down the socket when closing it
+        self.socket.shutdown(SHUT_RDWR)
+        return self.socket.close(*args, **kwargs)
+
+    @classmethod
+    @contextmanager
+    def connect(cls, ip_addr, port):
+        sock = socket(AF_INET, SOCK_STREAM)
+        with closing(Socket(sock, ip_addr, port)) as s:
+            yield s
 
 
 class Response(object):
