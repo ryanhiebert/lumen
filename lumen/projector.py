@@ -10,9 +10,6 @@ class ProjectorSet(object):
         return 'ProjectorSet({})'.format(
             repr([p.ip_addr for p in self.projectors]))
 
-    def trigger(self, message):
-        return [projector.trigger(message) for projector in self.projectors]
-
     def query(self, message):
         return [projector.query(message) for projector in self.projectors]
 
@@ -43,21 +40,7 @@ class Projector(object):
     def __repr__(self):
         return 'Projector({})'.format(repr(self.ip_addr))
 
-    def trigger(self, message):
-        """Send the projector a message.
-
-        Don't wait for the response.
-        """
-        with closing(socket(AF_INET, SOCK_STREAM)) as s:
-            s.connect((self.ip_addr, self.port))
-            s.send(message + b'\r')
-            s.shutdown(SHUT_RDWR)
-
     def query(self, message):
-        """Query the projector with a message.
-
-        Wait for the response.
-        """
         with closing(socket(AF_INET, SOCK_STREAM)) as s:
             s.connect((self.ip_addr, self.port))
             bytes = s.send(message + b'\r')
@@ -67,22 +50,22 @@ class Projector(object):
         return Response(messageback[:-1])
 
     def poweron(self):
-        return self.trigger(b'POWER=ON')
+        return self.query(b'POWER=ON')
 
     def poweroff(self):
-        return self.trigger(b'POWER=OFF')
+        return self.query(b'POWER=OFF')
 
     def freeze(self):
-        return self.trigger(b'FREEZE=ON')
+        return self.query(b'FREEZE=ON')
 
     def unfreeze(self):
-        return self.trigger(b'FREEZE=OFF')
+        return self.query(b'FREEZE=OFF')
 
     def blank(self):
-        return self.trigger(b'BLANK=ON')
+        return self.query(b'BLANK=ON')
 
     def unblank(self):
-        return self.trigger(b'BLANK=OFF')
+        return self.query(b'BLANK=OFF')
 
 
 class Response(object):
