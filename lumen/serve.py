@@ -37,6 +37,20 @@ def redirect_home(fn):
     return wrapper
 
 
+@app.route('/poweron', methods=['POST'])
+@redirect_home
+@with_projectors
+def poweron(projectors):
+    projectors.poweron()
+
+
+@app.route('/poweroff', methods=['POST'])
+@redirect_home
+@with_projectors
+def poweroff(projectors):
+    projectors.poweroff()
+
+
 @app.route('/freeze', methods=['POST'])
 @redirect_home
 @with_projectors

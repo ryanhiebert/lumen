@@ -13,6 +13,12 @@ class ProjectorSet(object):
     def query(self, message):
         return [projector.query(message) for projector in self.projectors]
 
+    def poweron(self):
+        return [projector.poweron() for projector in self.projectors]
+
+    def poweroff(self):
+        return [projector.poweroff() for projector in self.projectors]
+
     def freeze(self):
         return [projector.freeze() for projector in self.projectors]
 
@@ -42,6 +48,12 @@ class Projector(object):
             s.shutdown(SHUT_RDWR)
         assert messageback.endswith(b'\r')
         return Response(messageback[:-1])
+
+    def poweron(self):
+        return self.query(b'POWER=ON')
+
+    def poweroff(self):
+        return self.query(b'POWER=OFF')
 
     def freeze(self):
         return self.query(b'FREEZE=ON')
