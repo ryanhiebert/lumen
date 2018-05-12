@@ -1,0 +1,16 @@
+# This is a sample systemd service file.
+# Install one similar to this to /etc/systemd/system
+# then run sudo systemctl enable lumen
+# to make the server run automatically on boot.
+
+[Unit]
+Description=Lumen Projector Management
+
+[Service]
+Environment="PORT=80"
+Environment="PROJECTOR_IP_ADDRS=192.168.10.132,192.168.10.133"
+ExecStart=/lumen/venv/bin/gunicorn lumen.serve:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
