@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Projectors - Gentry SDA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-wrapper">
+        <span class="brand-logo center">Projectors</span>
+      </div>
+    </nav>
+   <form style="max-width: 400px; min-width: 325px; margin-left: auto; margin-right: auto" method="POST">
+      <div class="row">
+        <div class="col s12">
+          <div class="card">
+            <div class="card-action" style="display: flex; justify-content: center; gap: 10px">
+              {% for label, (type, conn) in projectors.items() %}
+                <label title="{{type}}:{{conn}}" class="waves-effect waves-light" style="min-width: 140px; display: flex; justify-content: center">
+                  <input type="checkbox" name="projector" value="{{ label }}"{% if label in active %} checked{% endif %} />
+                  <span>{{ label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-action" style="display: flex; justify-content: center; gap: 10px">
+              <button class="waves-effect waves-light btn-large" style="min-width: 140px" name="command" value="poweron">On</button>
+              <button class="waves-effect waves-light btn-large" style="min-width: 140px" name="command" value="poweroff">Off</button>
+            </div>
+            <div class="card-action" style="display: flex; justify-content: center; gap: 10px">
+              <button class="waves-effect waves-light btn-large" style="min-width: 140px" name="command" value="freeze">Freeze</button>
+              <button class="waves-effect waves-light btn-large" style="min-width: 140px" name="command" value="unfreeze">Unfreeze</button>
+            </div>
+            <div class="card-action" style="display: flex; justify-content: center; gap: 10px">
+              <button class="waves-effect waves-light btn-large" style="min-width: 140px" name="command" value="blank">Blank</button>
+              <button class="waves-effect waves-light btn-large" style="min-width: 140px" name="command" value="unblank">Unblank</button>
+            </div>
+          </div>
+          {% if error %}
+            <div class="card">
+              <div class="card-action">
+                <blockquote style="margin: 0">{{ error }}</blockquote>
+              </div>
+            </div>
+            <script>
+              /* Remove the error message from the URL so it goes away on refresh */
+              window.history.replaceState(null, "", {{replace_url|tojson}})
+            </script>
+          {% endif %}
+        </div>
+      </div>
+    </form>
+  </body>
+</html>
