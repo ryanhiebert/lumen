@@ -60,6 +60,7 @@ def unknown(label: str, conn: str, command: str):
 def canon(label: str, conn: str, command: str):
     """Send a command to a canon projector without blocking."""
     with closing(socket(AF_INET, SOCK_STREAM)) as s:
+        s.settimeout(10)
         s.connect((conn, 33336))
         commands = {
             "poweron": b"POWER=ON",
@@ -80,6 +81,7 @@ def canon(label: str, conn: str, command: str):
 def vivitek(label: str, conn: str, command: str):
     """Send a command to a vivitek projector without blocking."""
     with closing(socket(AF_INET, SOCK_STREAM)) as s:
+        s.settimeout(10)
         s.connect((conn, 7000))
         commands = {
             "poweron": b"power.on",
