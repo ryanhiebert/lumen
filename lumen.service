@@ -9,8 +9,9 @@ Description=Lumen Projector Management
 [Service]
 Environment="PORT=80"
 # Environment="PROJECTORS=Left:canon:192.168.10.132,Right:canon:192.168.10.133"
-Environment="PROJECTORS=Left:vivitek:192.168.10.134,Right:vivitek:192.168.10.135"
-ExecStart=/lumen/venv/bin/gunicorn lumen.serve:app
+# Environment="PROJECTORS=Left:vivitek:192.168.10.134,Right:vivitek:192.168.10.135"
+Environment="PROJECTORS=Left::lfake,Right::rfake"
+ExecStart=/lumen/venv/bin/gunicorn lumen:app
 Restart=always
 
 [Install]
