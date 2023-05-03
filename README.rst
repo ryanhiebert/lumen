@@ -74,7 +74,7 @@ Create the venv by running::
 Then install the lumen package::
 
     source venv/bin/activate
-    pip install -e ./lumen
+    pip install ./lumen
     deactivate
 
 Create the systemd service file.
